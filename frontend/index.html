@@ -4,21 +4,323 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Hallucination & Bias Detector</title>
-  <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+/* ── Reset & variables ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0a0a0f;
+  --surface:  #14141f;
+  --border:   #1e1e2e;
+  --input-bg: #111118;
+  --text:     #e8e8f0;
+  --muted:    #5a5a72;
+  --dim:      #c0c0d8;
+  --cyan:     #00e5ff;
+  --purple:   #b388ff;
+  --orange:   #ff6b35;
+  --red:      #ff4d4d;
+  --yellow:   #ffd93d;
+  --green:    #39ff7a;
+  --radius:   14px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page { min-height: 100vh; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 52px 20px 80px; }
+
+.header {
+  text-align: center;
+  margin-bottom: 52px;
+  animation: fadeUp .5s ease both;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 55%, var(--orange) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: .72rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #333348;
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.card-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--purple), var(--orange));
+}
+
+.input-card { animation: fadeUp .5s .1s ease both; opacity: 0; animation-fill-mode: forwards; }
+
+.field-label {
+  font-size: .68rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: .85rem;
+  line-height: 1.75;
+  padding: 16px;
+  resize: vertical;
+  min-height: 168px;
+  transition: border-color .2s, box-shadow .2s;
+}
+textarea::placeholder { color: var(--muted); }
+textarea:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(0,229,255,.07);
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+.char-count { font-size: .64rem; color: var(--muted); }
+.hint       { font-size: .62rem; color: #333348; }
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 15px 24px;
+  background: var(--cyan);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: background .2s, transform .15s, box-shadow .2s;
+}
+.btn:hover:not(:disabled) {
+  background: #33ecff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0,229,255,.25);
+}
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.spinner {
+  display: none;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(0,0,0,.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  flex-shrink: 0;
+}
+.spinner.active { display: block; }
+
+.error-box {
+  display: none;
+  margin-top: 12px;
+  background: rgba(255,77,77,.08);
+  border: 1px solid rgba(255,77,77,.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: .82rem;
+  color: #ff6b6b;
+}
+.error-box.visible { display: block; }
+
+.results { display: none; }
+.results.visible {
+  display: block;
+  animation: fadeUp .4s ease both;
+}
+
+.scores-row {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.score-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 18px;
+  text-align: center;
+  flex: 1;
+  min-width: 140px;
+  transition: border-color .3s;
+}
+
+.score-label {
+  font-size: .62rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.score-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 10px;
+  transition: color .6s;
+}
+
+.score-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  transition: width 1s cubic-bezier(.16,1,.3,1), background .6s;
+}
+
+.score-caption {
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.analysis-card { animation: none; }
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .72rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  flex-shrink: 0;
+}
+
+.explanation {
+  font-size: .87rem;
+  line-height: 1.85;
+  color: var(--dim);
+}
+
+.flags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.flag {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: .68rem;
+  letter-spacing: .08em;
+  font-weight: 500;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 44px;
+  font-size: .66rem;
+  color: var(--muted);
+  letter-spacing: .1em;
+}
+.cyan { color: var(--cyan); }
+
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 520px) {
+  .scores-row    { flex-direction: column; }
+  .score-card    { min-width: unset; }
+  .meta-row      { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+  </style>
 </head>
 <body>
   <div class="page">
     <div class="wrap">
-      <!-- Header -->
       <header class="header">
         <div class="logo">AI Hallucination</div>
         <p class="tagline">AI Hallucination &amp; Bias Detector</p>
         <p class="subtitle">Powered by HuggingFace Transformers &amp; FastAPI</p>
       </header>
-      <!-- Input card -->
       <div class="card input-card">
         <div class="card-accent"></div>
         <div class="field-label">Paste text to analyze</div>
@@ -37,9 +339,7 @@
         </button>
         <div class="error-box" id="errorBox"></div>
       </div>
-      <!-- Results -->
       <section class="results" id="results" aria-live="polite">
-        <!-- Score cards -->
         <div class="scores-row">
           <div class="score-card" id="cardHallucination">
             <div class="score-label">Hallucination</div>
@@ -60,7 +360,6 @@
             <div class="score-caption" id="capTrust"></div>
           </div>
         </div>
-        <!-- Analysis block -->
         <div class="card analysis-card">
           <div class="analysis-header">
             <span class="dot"></span>
@@ -75,6 +374,142 @@
       </footer>
     </div>
   </div>
-  <script src="/app.js"></script>
+  <script>
+const MAX_CHARS = 12000;
+
+const TAG_COLORS = [
+  { color: "#00e5ff", border: "rgba(0,229,255,0.35)",  bg: "rgba(0,229,255,0.07)" },
+  { color: "#ff6b35", border: "rgba(255,107,53,0.35)", bg: "rgba(255,107,53,0.07)" },
+  { color: "#ff4d4d", border: "rgba(255,77,77,0.35)",  bg: "rgba(255,77,77,0.07)" },
+  { color: "#39ff7a", border: "rgba(57,255,122,0.35)", bg: "rgba(57,255,122,0.07)" },
+  { color: "#ffd93d", border: "rgba(255,217,61,0.35)", bg: "rgba(255,217,61,0.07)" },
+];
+
+function scoreColor(val, invert) {
+  if (invert) {
+    if (val >= 70) return "#39ff7a";
+    if (val >= 45) return "#ffd93d";
+    if (val >= 25) return "#ff6b35";
+    return "#ff4d4d";
+  }
+  if (val <= 20) return "#39ff7a";
+  if (val <= 45) return "#ffd93d";
+  if (val <= 70) return "#ff6b35";
+  return "#ff4d4d";
+}
+
+function scoreCaption(val, invert) {
+  if (invert) {
+    if (val >= 70) return "High trust";
+    if (val >= 45) return "Moderate";
+    if (val >= 25) return "Low trust";
+    return "Very low";
+  }
+  if (val <= 20) return "Very low";
+  if (val <= 45) return "Low";
+  if (val <= 70) return "Moderate";
+  return "High";
+}
+
+const inputText  = document.getElementById("inputText");
+const charCount  = document.getElementById("charCount");
+const analyzeBtn = document.getElementById("analyzeBtn");
+const btnText    = analyzeBtn.querySelector(".btn-text");
+const spinner    = document.getElementById("spinner");
+const errorBox   = document.getElementById("errorBox");
+const results    = document.getElementById("results");
+
+inputText.addEventListener("input", () => {
+  const len = inputText.value.length;
+  charCount.textContent = `${len.toLocaleString()} / ${MAX_CHARS.toLocaleString()}`;
+  charCount.style.color = len > MAX_CHARS ? "#ff4d4d" : "";
+});
+
+inputText.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") analyze();
+});
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.add("visible");
+}
+
+function clearError() {
+  errorBox.textContent = "";
+  errorBox.classList.remove("visible");
+}
+
+function setLoading(on) {
+  analyzeBtn.disabled = on;
+  spinner.classList.toggle("active", on);
+  btnText.textContent = on ? "Analyzing…" : "Analyze Text";
+}
+
+function applyScore(valId, barId, capId, value, invert) {
+  const color = scoreColor(value, invert);
+  document.getElementById(valId).textContent = value;
+  document.getElementById(valId).style.color = color;
+  document.getElementById(capId).textContent = scoreCaption(value, invert);
+  document.getElementById(barId).style.background = color;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById(barId).style.width = `${value}%`;
+    });
+  });
+}
+
+async function analyze() {
+  const text = inputText.value.trim();
+  if (!text) { showError("Please paste some text to analyze."); return; }
+  if (text.length > MAX_CHARS) { showError(`Text exceeds ${MAX_CHARS.toLocaleString()} characters.`); return; }
+
+  clearError();
+  results.classList.remove("visible");
+  setLoading(true);
+
+  ["barHallucination", "barBias", "barTrust"].forEach(id => {
+    document.getElementById(id).style.width = "0%";
+  });
+
+  try {
+    const res = await fetch(`/api/analyze`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ text }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+
+    applyScore("valHallucination", "barHallucination", "capHallucination", data.hallucination_score, false);
+    applyScore("valBias",          "barBias",           "capBias",          data.bias_score,          false);
+    applyScore("valTrust",         "barTrust",          "capTrust",         data.trust_score,         true);
+
+    document.getElementById("explanationText").textContent = data.explanation;
+
+    const flagsRow = document.getElementById("flagsRow");
+    flagsRow.innerHTML = "";
+    (data.flags || []).forEach((flag, i) => {
+      const c    = TAG_COLORS[i % TAG_COLORS.length];
+      const span = document.createElement("span");
+      span.className        = "flag";
+      span.textContent      = flag;
+      span.style.color      = c.color;
+      span.style.border     = `1px solid ${c.border}`;
+      span.style.background = c.bg;
+      flagsRow.appendChild(span);
+    });
+
+    results.classList.add("visible");
+
+  } catch (err) {
+    showError("Analysis failed: " + err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+analyzeBtn.addEventListener("click", analyze);
+  </script>
 </body>
 </html>
