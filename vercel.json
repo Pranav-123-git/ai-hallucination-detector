@@ -11,10 +11,7 @@
     },
     {
       "src": "frontend/**",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "frontend"
-      }
+      "use": "@vercel/static"
     }
   ],
   "routes": [
