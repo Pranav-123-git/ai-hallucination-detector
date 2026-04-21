@@ -5,12 +5,11 @@
       "src": "backend/app.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "250mb",
-        "runtime": "python3.9"
+        "maxLambdaSize": "250mb"
       }
     },
     {
-      "src": "frontend/**",
+      "src": "frontend/index.html",
       "use": "@vercel/static"
     }
   ],
