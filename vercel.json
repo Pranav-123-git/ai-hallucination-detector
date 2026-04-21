@@ -22,12 +22,10 @@
       "src": "/api/(.*)",
       "dest": "backend/app.py"
     },
-    // Explicitly route the root to index.html within frontend
     {
       "src": "/",
       "dest": "frontend/index.html"
     },
-    // All other frontend assets (like /app.js, /style.css)
     {
       "src": "/(.*)",
       "dest": "frontend/$1"
