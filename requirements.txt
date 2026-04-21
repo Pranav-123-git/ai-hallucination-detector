@@ -1,0 +1,7 @@
+flask
+flask-cors
+transformers
+torch==2.0.1+cpu # Explicitly specify CPU version for smaller size
+nltk
+sentencepiece    # Required by some transformer models
+accelerate       # Often used with transformers for efficiency

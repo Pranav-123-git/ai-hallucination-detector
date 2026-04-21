@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Hallucination & Bias Detector</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="page">
+    <div class="wrap">
+
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">AI Hallucination</div>
+        <p class="tagline">AI Hallucination &amp; Bias Detector</p>
+        <p class="subtitle">Powered by HuggingFace Transformers &amp; FastAPI</p>
+      </header>
+
+      <!-- Input card -->
+      <div class="card input-card">
+        <div class="card-accent"></div>
+        <div class="field-label">Paste text to analyze</div>
+        <textarea
+          id="inputText"
+          placeholder="Paste any AI-generated or human-written text here… (max 12,000 characters)"
+          rows="8"
+        ></textarea>
+        <div class="meta-row">
+          <span class="char-count" id="charCount">0 / 12,000</span>
+          <span class="hint">Ctrl + Enter to analyze</span>
+        </div>
+        <button class="btn" id="analyzeBtn">
+          <span class="btn-text">Analyze Text</span>
+          <span class="spinner" id="spinner"></span>
+        </button>
+        <div class="error-box" id="errorBox"></div>
+      </div>
+
+      <!-- Results -->
+      <section class="results" id="results" aria-live="polite">
+
+        <!-- Score cards -->
+        <div class="scores-row">
+          <div class="score-card" id="cardHallucination">
+            <div class="score-label">Hallucination</div>
+            <div class="score-value" id="valHallucination">—</div>
+            <div class="score-track"><div class="score-fill" id="barHallucination"></div></div>
+            <div class="score-caption" id="capHallucination"></div>
+          </div>
+          <div class="score-card" id="cardBias">
+            <div class="score-label">Bias</div>
+            <div class="score-value" id="valBias">—</div>
+            <div class="score-track"><div class="score-fill" id="barBias"></div></div>
+            <div class="score-caption" id="capBias"></div>
+          </div>
+          <div class="score-card" id="cardTrust">
+            <div class="score-label">Trust</div>
+            <div class="score-value" id="valTrust">—</div>
+            <div class="score-track"><div class="score-fill" id="barTrust"></div></div>
+            <div class="score-caption" id="capTrust"></div>
+          </div>
+        </div>
+
+        <!-- Analysis block -->
+        <div class="card analysis-card">
+          <div class="analysis-header">
+            <span class="dot"></span>
+            Analysis
+          </div>
+          <p class="explanation" id="explanationText"></p>
+          <div class="flags-row" id="flagsRow"></div>
+        </div>
+
+      </section>
+
+      <footer class="footer">
+        Powered by <span class="cyan">HuggingFace Transformers</span> &amp; <span class="cyan">FastAPI</span>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
