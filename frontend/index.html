@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Hallucination & Bias Detector</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -12,14 +12,12 @@
 <body>
   <div class="page">
     <div class="wrap">
-
       <!-- Header -->
       <header class="header">
         <div class="logo">AI Hallucination</div>
         <p class="tagline">AI Hallucination &amp; Bias Detector</p>
         <p class="subtitle">Powered by HuggingFace Transformers &amp; FastAPI</p>
       </header>
-
       <!-- Input card -->
       <div class="card input-card">
         <div class="card-accent"></div>
@@ -39,10 +37,8 @@
         </button>
         <div class="error-box" id="errorBox"></div>
       </div>
-
       <!-- Results -->
       <section class="results" id="results" aria-live="polite">
-
         <!-- Score cards -->
         <div class="scores-row">
           <div class="score-card" id="cardHallucination">
@@ -64,7 +60,6 @@
             <div class="score-caption" id="capTrust"></div>
           </div>
         </div>
-
         <!-- Analysis block -->
         <div class="card analysis-card">
           <div class="analysis-header">
@@ -74,15 +69,12 @@
           <p class="explanation" id="explanationText"></p>
           <div class="flags-row" id="flagsRow"></div>
         </div>
-
       </section>
-
       <footer class="footer">
         Powered by <span class="cyan">HuggingFace Transformers</span> &amp; <span class="cyan">FastAPI</span>
       </footer>
     </div>
   </div>
-
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>
